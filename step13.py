@@ -21,6 +21,7 @@ class AlienInvasion:
         self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
         self.settings.screen_width = self.screen.get_rect().width
         self.settings.screen_height = self.screen.get_rect().height
+        self.screen_rect = self.screen.get_rect()
         pygame.display.set_caption("Dom's Alien Invasion")
         # Create an instance to store game settings
         self.stats = GameStats(self)
@@ -31,6 +32,8 @@ class AlienInvasion:
         # Add in the aliens
         self.aliens = pygame.sprite.Group()
         self._create_fleet()
+        # Keep score of aliens killed
+        self.score = 0
 
     def run_game(self):
         # Start the main loop for the game
@@ -104,6 +107,9 @@ class AlienInvasion:
         # Check for any bullets that have hit aliens. If so, get rid of the bullet and alien
         collisions = pygame.sprite.groupcollide(
             self.bullets, self.aliens, True, True)
+        if collisions:
+            for aliens in collisions.values():
+                self.score += len(aliens)
         # Check to see if the aliens group is empty and if so, create a new fleet
         if not self.aliens:
             # Destroy any existing bullets and create a new fleet
@@ -207,7 +213,25 @@ class AlienInvasion:
         # Draw the alien
         self.aliens.draw(self.screen)
         # Make the most recently drawn screen visible
+        self.draw_scoreboard()
         pygame.display.flip()
+
+    def draw_scoreboard(self):
+        font = pygame.font.SysFont(None, 40)
+        score_text = font.render(
+            "Score: " + str(self.score), True, (255, 255, 255))
+        score_rect = score_text.get_rect()
+        score_rect.top = 10
+        score_rect.right = self.screen_rect.right - 10
+
+        lives_text = font.render(
+            "Remaining Ships: " + str(self.stats.ships_left), True, (255, 255, 255))
+        lives_rect = lives_text.get_rect()
+        lives_rect.top = score_rect.bottom + 10
+        lives_rect.right = self.screen_rect.right - 10
+
+        self.screen.blit(score_text, score_rect)
+        self.screen.blit(lives_text, lives_rect)
 
 
 if __name__ == '__main__':
